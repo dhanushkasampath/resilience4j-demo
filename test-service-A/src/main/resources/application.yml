@@ -1,0 +1,50 @@
+spring:
+  application:
+    name: test-service-A
+server:
+  port: 8080
+
+#These are the actual configs for circuit breaker
+
+# Below are actuator configurations
+management:
+  health:
+    circuit breakers:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: health #to get all we can use *
+  endpoint:
+    health:
+      show-details: always
+
+# Below are resilience4j configurations
+resilience4j:
+  circuitbreaker:
+    instances:
+      serviceA: #the name we defined as our circuit breaker
+        registerHealthIndicator: true
+        eventConsumerBufferSize: 10
+        failureRateThreshold: 50  #at 50% circuit breaker will change the status
+        minimumNumberOfCalls: 5
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 5s  # In production waiting time should be very low in nano and micro second level
+        permittedNumberOfCallsInHalfOpenState: 3 #just to check our application is up or not
+        slidingWindowSize: 10
+        slidingWindowType: COUNT_BASED
+
+  retry:
+    instances:
+      serviceA:
+        maxRetryAttempts: 10
+        waitDuration: 2s
+        registeredHealthIndicator: true
+
+  ratelimiter:
+    instances:
+      serviceA: # below configs say that within 10s only 10 requests are allowed
+        registeredHealthIndicator: true
+        limitForPeriod: 10
+        limitRefreshPeriod: 10s
+        timeoutDuration: 3s  # after 10 seconds wait for 3 seconds without accepting any request and start again to accept
