@@ -4,10 +4,15 @@ spring:
 server:
   port: 8080
 
+  zipkin:
+    base-url: http://localhost:9411
+
 #These are the actual configs for circuit breaker
 
 # Below are actuator configurations
 management:
+  tracing:
+    enabled: true
   health:
     circuit breakers:
       enabled: true
